@@ -1,0 +1,164 @@
+import { useState, useEffect } from 'react';
+import { motion } from 'framer-motion';
+
+/**
+ * Fotoğraf Carousel Bileşeni
+ * SOLID Prensipleri:
+ * S: Tek sorumluluk - Fotoğraf gösterimi ve geçişleri
+ * O: Açık/Kapalı - Yeni fotoğraflar kolayca eklenebilir
+ * L: Liskov - Standart carousel davranışı
+ * I: Interface - Minimal props arayüzü
+ * D: Bağımlılık - Props ile bağımsız çalışır
+ */
+const PhotoCarousel = () => {
+  const [currentIndex, setCurrentIndex] = useState(0);
+  const [isTransitioning, setIsTransitioning] = useState(false);
+
+  // Örnek fotoğraf URL'leri (gerçek fotoğraflarla değiştirilecek)
+  const photos = [
+    'https://images.unsplash.com/photo-1516589178581-6cd7833ae3b2?w=800&h=600&fit=crop',
+    'https://images.unsplash.com/photo-1529333166437-7750a6dd5a70?w=800&h=600&fit=crop',
+    'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=800&h=600&fit=crop',
+    'https://images.unsplash.com/photo-1513475382585-d06e58bcb0e0?w=800&h=600&fit=crop',
+    'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=800&h=600&fit=crop'
+  ];
+
+  // Otomatik geçiş
+  useEffect(() => {
+    const interval = setInterval(() => {
+      if (!isTransitioning) {
+        nextPhoto();
+      }
+    }, 4000);
+
+    return () => clearInterval(interval);
+  }, [currentIndex, isTransitioning]);
+
+  const nextPhoto = () => {
+    setIsTransitioning(true);
+    setCurrentIndex((prev) => (prev + 1) % photos.length);
+    setTimeout(() => setIsTransitioning(false), 500);
+  };
+
+  const prevPhoto = () => {
+    setIsTransitioning(true);
+    setCurrentIndex((prev) => (prev - 1 + photos.length) % photos.length);
+    setTimeout(() => setIsTransitioning(false), 500);
+  };
+
+  const goToPhoto = (index) => {
+    setIsTransitioning(true);
+    setCurrentIndex(index);
+    setTimeout(() => setIsTransitioning(false), 500);
+  };
+
+  // Framer Motion animasyon varyantları
+  const containerVariants = {
+    hidden: { opacity: 0, scale: 0.9 },
+    visible: { 
+      opacity: 1, 
+      scale: 1,
+      transition: { duration: 0.8, ease: "easeOut" }
+    }
+  };
+
+  const imageVariants = {
+    hidden: { opacity: 0, scale: 1.1 },
+    visible: { 
+      opacity: 1, 
+      scale: 1,
+      transition: { duration: 0.6, ease: "easeOut" }
+    }
+  };
+
+  return (
+    <motion.div 
+      className="max-w-4xl mx-auto"
+      variants={containerVariants}
+      initial="hidden"
+      whileInView="visible"
+      viewport={{ once: true, amount: 0.3 }}
+    >
+      <div className="relative overflow-hidden rounded-2xl shadow-2xl">
+        {/* Ana fotoğraf */}
+        <div className="relative h-96 md:h-[500px]">
+          <motion.img
+            key={currentIndex}
+            src={photos[currentIndex]}
+            alt={`Fotoğraf ${currentIndex + 1}`}
+            className={`w-full h-full object-cover ${
+              isTransitioning ? 'scale-110 blur-sm' : 'scale-100 blur-0'
+            }`}
+            variants={imageVariants}
+            initial="hidden"
+            animate="visible"
+            transition={{ duration: 0.5 }}
+          />
+          
+          {/* Fotoğraf üzerinde romantik overlay */}
+          <div className="absolute inset-0 bg-gradient-to-t from-black/30 via-transparent to-transparent" />
+          
+          {/* Fotoğraf numarası */}
+          <motion.div 
+            className="absolute top-4 right-4 bg-pink-500/80 text-white px-3 py-1 rounded-full text-sm font-medium"
+            initial={{ opacity: 0, x: 20 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ delay: 0.3 }}
+          >
+            {currentIndex + 1} / {photos.length}
+          </motion.div>
+        </div>
+
+        {/* Gezinme butonları */}
+        <motion.button
+          onClick={prevPhoto}
+          className="absolute left-4 top-1/2 transform -translate-y-1/2 bg-white/80 hover:bg-white text-pink-600 p-3 rounded-full shadow-lg transition-all duration-300 hover:scale-110"
+          whileHover={{ scale: 1.1 }}
+          whileTap={{ scale: 0.95 }}
+        >
+          ❮
+        </motion.button>
+        
+        <motion.button
+          onClick={nextPhoto}
+          className="absolute right-4 top-1/2 transform -translate-y-1/2 bg-white/80 hover:bg-white text-pink-600 p-3 rounded-full shadow-lg transition-all duration-300 hover:scale-110"
+          whileHover={{ scale: 1.1 }}
+          whileTap={{ scale: 0.95 }}
+        >
+          ❯
+        </motion.button>
+
+        {/* Nokta göstergeleri */}
+        <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 flex space-x-2">
+          {photos.map((_, index) => (
+            <motion.button
+              key={index}
+              onClick={() => goToPhoto(index)}
+              className={`w-3 h-3 rounded-full transition-all duration-300 ${
+                index === currentIndex
+                  ? 'bg-pink-500 scale-125'
+                  : 'bg-white/60 hover:bg-white/80'
+              }`}
+              whileHover={{ scale: 1.2 }}
+              whileTap={{ scale: 0.9 }}
+            />
+          ))}
+        </div>
+      </div>
+
+      {/* Fotoğraf açıklaması */}
+      <motion.div 
+        className="text-center mt-6"
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.5 }}
+      >
+        <p className="text-pink-600 text-lg font-medium">
+          Seninle geçirdiğim her an, hayatımın en güzel hediyesi ❤️
+        </p>
+      </motion.div>
+    </motion.div>
+  );
+};
+
+export default PhotoCarousel; 
