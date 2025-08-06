@@ -60,7 +60,7 @@ const SparkleEffects = ({ isActive }) => {
   if (!isActive) return null;
 
   return (
-    <div className="fixed inset-0 pointer-events-none z-15 overflow-hidden">
+    <div className="fixed inset-0 pointer-events-none z-50 overflow-hidden">
       {sparkles.map(sparkle => (
         <div
           key={sparkle.id}

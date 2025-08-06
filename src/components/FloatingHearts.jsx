@@ -9,20 +9,24 @@ import { useState, useEffect } from 'react';
  * I: Interface - Minimal props arayüzü
  * D: Bağımlılık - Props ile bağımsız çalışır
  */
-const FloatingHearts = ({ isActive }) => {
+const FloatingHearts = ({ isActive, isExcited }) => {
   const [hearts, setHearts] = useState([]);
+  const MAX_HEARTS = isExcited ? 200 : 20;
 
   // Kalp oluşturma fonksiyonu
   const createHeart = () => {
+    const speedMultiplier = isExcited ? 4 : 2;
+    const sizeMultiplier = isExcited ? 1.5 : 2;
+
     const heart = {
       id: Date.now() + Math.random(),
       x: Math.random() * window.innerWidth,
       y: window.innerHeight + 50,
-      size: Math.random() * 20 + 15, 
-      speed: Math.random() * 2 + 1, 
+      size: (Math.random() * 20 + 15) * sizeMultiplier,
+      speed: (Math.random() * 4 + 1) * speedMultiplier,
       rotation: Math.random() * 360,
       color: ['#ff6b9d', '#ff8fab', '#ffb3c1', '#ff6b9d', '#e91e63'][Math.floor(Math.random() * 5)],
-      delay: Math.random() * 3000 
+      delay: Math.random() * 1000
     };
     return heart;
   };
@@ -32,24 +36,30 @@ const FloatingHearts = ({ isActive }) => {
     if (!isActive) return;
 
     const addHeart = () => {
-      setHearts(prev => [...prev, createHeart()]);
+      setHearts(prev => {
+
+        if (prev.length >= MAX_HEARTS) {
+          return prev;
+        }
+        return [...prev, createHeart()];
+      });
     };
 
-    // İlk kalpleri oluştur (daha az sayıda)
+
     const initialHearts = Array.from({ length: 5 }, () => createHeart());
     setHearts(initialHearts);
 
-    // Düzenli olarak yeni kalpler ekle (daha seyrek)
-    const interval = setInterval(addHeart, 1500);
+
+    const interval = setInterval(addHeart, isExcited ? 300 : 3000);
 
     return () => clearInterval(interval);
   }, [isActive]);
 
-  // Kalp temizleme
+  // Kalp temizleme (daha hızlı temizleme)
   useEffect(() => {
     const cleanup = setInterval(() => {
       setHearts(prev => prev.filter(heart => heart.y > -100));
-    }, 750);
+    }, 1000); // Daha hızlı temizleme (1 saniyede bir)
 
     return () => clearInterval(cleanup);
   }, []);
@@ -59,7 +69,7 @@ const FloatingHearts = ({ isActive }) => {
     if (!isActive) return;
 
     const updateHearts = () => {
-      setHearts(prev => 
+      setHearts(prev =>
         prev.map(heart => ({
           ...heart,
           y: heart.y - heart.speed,
@@ -75,7 +85,10 @@ const FloatingHearts = ({ isActive }) => {
   if (!isActive) return null;
 
   return (
-    <div className="fixed inset-0 pointer-events-none z-1 overflow-hidden">
+    <div
+      className="floating-hearts"
+      style={{ zIndex: 0, position: 'fixed', top: 0, left: 0, width: '100vw', height: '100vh', pointerEvents: 'none' }}
+    >
       {hearts.map(heart => (
         <div
           key={heart.id}
@@ -88,7 +101,7 @@ const FloatingHearts = ({ isActive }) => {
             fontSize: `${heart.size}px`,
             transition: 'all 0.2s ease-out',
             animationDelay: `${heart.delay}ms`,
-            opacity: 0.7 
+            opacity: 0.7
           }}
         >
           ❤️
