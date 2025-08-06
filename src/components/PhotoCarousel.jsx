@@ -151,6 +151,7 @@ const PhotoCarousel = () => {
         </div>
         {/* Gezinme butonları */}
         <motion.button
+          type="button"
           onClick={prevPhoto}
           className="absolute left-4 top-1/2 transform -translate-y-1/2 bg-white/80 hover:bg-white text-pink-600 p-3 rounded-full shadow-lg transition-all duration-300 hover:scale-110"
           whileHover={{ scale: 1.1 }}
@@ -159,6 +160,7 @@ const PhotoCarousel = () => {
           ❮
         </motion.button>
         <motion.button
+          type="button"
           onClick={nextPhoto}
           className="absolute right-4 top-1/2 transform -translate-y-1/2 bg-white/80 hover:bg-white text-pink-600 p-3 rounded-full shadow-lg transition-all duration-300 hover:scale-110"
           whileHover={{ scale: 1.1 }}
